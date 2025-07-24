@@ -1,6 +1,6 @@
-# Car Dealership Team Management System
+# SmartStaff AI
 
-A modern web application built with Next.js for managing car dealership team members, with a special focus on sales team matching and profile management.
+An intelligent team management platform built with Next.js for car dealerships, featuring AI-powered team member matching and profile management.
 
 ## 🚀 Features
 

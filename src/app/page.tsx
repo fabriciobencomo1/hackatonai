@@ -33,13 +33,6 @@ export default function Home() {
         <p className="text-xl text-gray-600">AI-Powered Car Sales Professional Platform</p>
         
         <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-primary"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Finding Matches...' : 'Find Your Salesperson'}
-          </button>
 
           <Link
             href="/onboarding"
