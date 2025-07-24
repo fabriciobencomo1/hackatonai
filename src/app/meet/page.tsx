@@ -4,39 +4,16 @@ import { useState, useEffect, useMemo } from 'react'
 import { getAllSalespeople } from '@/lib/db-utils'
 import type { Salesperson } from '@/lib/db-utils'
 import CardTeamSales from '@/components/CardTeamSales'
-import { useParams, usePathname } from 'next/navigation'
 import { MatchingModal, type MatchingSurveyData } from '@/components/MatchingModal'
 import { MatchResults } from '@/components/MatchResults'
-
-function getInitials(firstName: string, lastName: string) {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
-}
-
-// Función para generar una calificación basada en el ID
-function generateRating(id: string): string {
-  // Usar el último carácter del ID para generar un número entre 4.0 y 5.0
-  const lastChar = id.charAt(id.length - 1)
-  const decimal = parseInt(lastChar, 16) % 10 // Convertir a número y obtener último dígito
-  return (4 + decimal / 10).toFixed(1)
-}
 
 export default function TeamPage() {
   const [salespeople, setSalespeople] = useState<Salesperson[]>([])
   const [loading, setLoading] = useState(true)
-  const [department, setDepartment] = useState('')
-  const [rating, setRating] = useState('')
   const [filteredSalespeople, setFilteredSalespeople] = useState<Salesperson[]>([])
   const [isMatchingModalOpen, setIsMatchingModalOpen] = useState(false)
   const [matchResults, setMatchResults] = useState<Salesperson[]>([])
   const [showResults, setShowResults] = useState(false)
-
-  // Memorizar las calificaciones para que sean consistentes
-  const ratings = useMemo(() => {
-    return salespeople.reduce((acc, person) => {
-      acc[person.id] = generateRating(person.id)
-      return acc
-    }, {} as Record<string, string>)
-  }, [salespeople])
 
   useEffect(() => {
     const loadSalespeople = async () => {
@@ -53,32 +30,6 @@ export default function TeamPage() {
 
     loadSalespeople()
   }, [])
-
-  const handleFilter = () => {
-    let filtered = [...salespeople]
-
-    if (department) {
-      filtered = filtered.filter(
-        (person) => person.department.toLowerCase() === department.toLowerCase()
-      )
-    }
-
-    if (rating) {
-      filtered = filtered.filter(
-        (person) =>
-          person.department === 'Sales' &&
-          parseFloat(ratings[person.id]) >= parseFloat(rating)
-      )
-    }
-
-    setFilteredSalespeople(filtered)
-  }
-
-  const clearFilters = () => {
-    setDepartment('')
-    setRating('')
-    setFilteredSalespeople(salespeople)
-  }
 
   const handleMatchingComplete = async (data: MatchingSurveyData) => {
     try {
