@@ -1,7 +1,6 @@
 import { NextConfig } from 'next';
 
 const config: NextConfig = {
-  reactStrictMode: true,
   images: {
     domains: ['api.dicebear.com'],
     remotePatterns: [
