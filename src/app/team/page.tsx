@@ -112,10 +112,17 @@ export default function TeamPage() {
               {/* Profile Image - Using a placeholder for now */}
               <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden relative">
                 <Image
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${person.first_name}`}
+                  src={`https://api.dicebear.com/7.x/avataaars/png?seed=${encodeURIComponent(person.first_name)}&backgroundColor=ffffff`}
                   alt={`${person.first_name} ${person.last_name}`}
                   fill
+                  sizes="(max-width: 96px) 100vw, 96px"
                   className="object-cover"
+                  priority={true}
+                  onError={(e) => {
+                    // Fallback to a default avatar if DiceBear fails
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://api.dicebear.com/7.x/avataaars/png?seed=fallback';
+                  }}
                 />
               </div>
 
