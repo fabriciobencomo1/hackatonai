@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react';
 import { getAllSalespeople } from '@/lib/db-utils';
 import type { Salesperson } from '@/lib/db-utils';
 import { Star } from 'lucide-react';
-import Image from 'next/image';
+
+function getInitials(firstName: string, lastName: string) {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+}
 
 export default function TeamPage() {
   const [salespeople, setSalespeople] = useState<Salesperson[]>([]);
@@ -37,7 +40,6 @@ export default function TeamPage() {
 
     if (rating) {
       // In a real app, you would have actual ratings
-      // For now, we'll use a random rating between 4.0 and 5.0
       filtered = filtered.filter(() => true);
     }
 
@@ -109,21 +111,9 @@ export default function TeamPage() {
         {filteredSalespeople.map((person) => (
           <div key={person.id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-start gap-4">
-              {/* Profile Image - Using a placeholder for now */}
-              <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden relative">
-                <Image
-                  src={`https://api.dicebear.com/7.x/avataaars/png?seed=${encodeURIComponent(person.first_name)}&backgroundColor=ffffff`}
-                  alt={`${person.first_name} ${person.last_name}`}
-                  fill
-                  sizes="(max-width: 96px) 100vw, 96px"
-                  className="object-cover"
-                  priority={true}
-                  onError={(e) => {
-                    // Fallback to a default avatar if DiceBear fails
-                    const target = e.target as HTMLImageElement;
-                    target.src = 'https://api.dicebear.com/7.x/avataaars/png?seed=fallback';
-                  }}
-                />
+              {/* Profile Image - Using initials as fallback */}
+              <div className="w-24 h-24 bg-blue-600 rounded-lg overflow-hidden relative flex items-center justify-center text-white text-2xl font-bold">
+                {getInitials(person.first_name, person.last_name)}
               </div>
 
               <div className="flex-1">

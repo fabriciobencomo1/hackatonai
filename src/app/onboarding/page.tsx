@@ -10,40 +10,55 @@ import { useRouter } from 'next/navigation';
 export default function OnboardingPage() {
   const [bio, setBio] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   
-  const { register, handleSubmit, formState: { errors } } = useForm<SalespersonData>();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<SalespersonData>();
+  const formData = watch();
 
-  const onSubmit = async (data: SalespersonData) => {
+  const onGenerateBio = async (data: SalespersonData) => {
     setIsLoading(true);
+    setError('');
     try {
-      // Convert arrays from string to array if they come as comma-separated strings
-      const formattedData: SalespersonData = {
-        ...data,
-        languages: typeof data.languages === 'string' ? data.languages.toString().split(',').map((l: string) => l.trim()) : data.languages,
-        specialties: typeof data.specialties === 'string' ? data.specialties.toString().split(',').map((s: string) => s.trim()) : data.specialties
-      };
-      
       // Generate bio
-      const generatedBio = await generateBioAction(formattedData);
+      const generatedBio = await generateBioAction(data);
       setBio(generatedBio);
-
-      // Save to database with generated bio
-      const savedSalesperson = await createSalesperson({
-        ...formattedData,
-        bioGenerated: generatedBio
-      });
-
-      if (savedSalesperson) {
-        // Redirect to success page or show success message
-        alert('Salesperson profile created successfully!');
-        router.push('/'); // Redirect to home page
-      }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error saving data. Please try again.');
+      setError('Error generating biography. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onSaveSalesperson = async () => {
+    if (!bio) {
+      setError('Please generate a biography first');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+    try {
+      // Format the data
+      const dataToSave: SalespersonData = {
+        ...formData,
+        bioGenerated: bio,
+        yearsExperience: Number(formData.yearsExperience),
+        languages: typeof formData.languages === 'string' ? formData.languages.split(',').map(l => l.trim()) : formData.languages,
+        specialties: typeof formData.specialties === 'string' ? formData.specialties.split(',').map(s => s.trim()) : formData.specialties,
+      };
+
+      // Save to database
+      await createSalesperson(dataToSave);
+      alert('Salesperson profile created successfully!');
+      router.push('/team');
+    } catch (error) {
+      console.error('Error:', error);
+      setError('Error saving data. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -52,7 +67,13 @@ export default function OnboardingPage() {
       <div className="card max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Demo AI - Salesperson Registration</h1>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit(onGenerateBio)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block mb-1">First Name</label>
@@ -160,7 +181,14 @@ export default function OnboardingPage() {
         {bio && (
           <div className="mt-8 p-4 bg-gray-50 rounded-lg">
             <h2 className="text-xl font-semibold mb-2">Generated Biography:</h2>
-            <p className="whitespace-pre-wrap">{bio}</p>
+            <p className="whitespace-pre-wrap mb-4">{bio}</p>
+            <button
+              onClick={onSaveSalesperson}
+              className="btn-primary w-full"
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving...' : 'Save Salesperson'}
+            </button>
           </div>
         )}
       </div>
