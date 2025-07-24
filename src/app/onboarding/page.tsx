@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { SalespersonFormData, SalespersonSaveData } from '@/types';
+import { SalespersonFormData, BADGES, MODELS } from '@/types';
 import { generateBioAction } from '../actions/generate-bio';
 import { uploadImage } from '../actions/upload-image';
 import { createSalesperson } from '@/lib/db-utils';
@@ -76,6 +76,10 @@ const SOFT_SKILLS = [
   { value: 'Leadership', label: 'Leadership' }
 ];
 
+// Convertir BADGES y MODELS a opciones para react-select
+const BADGE_OPTIONS = BADGES.map(badge => ({ value: badge, label: badge }));
+const MODEL_OPTIONS = MODELS.map(model => ({ value: model, label: model }));
+
 export default function OnboardingPage() {
   const [bio, setBio] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -107,7 +111,9 @@ export default function OnboardingPage() {
         ...data,
         languages: data.languages?.map(lang => lang.value) || [],
         specialties: data.specialties?.map(spec => spec.value) || [],
-        softSkills: data.softSkills?.map(skill => skill.value) || []
+        softSkills: data.softSkills?.map(skill => skill.value) || [],
+        badges: data.badges?.map(badge => badge.value) || [],
+        favoriteModels: data.favoriteModels?.map(model => model.value) || []
       };
 
       const generatedBio = await generateBioAction(formattedData);
@@ -138,13 +144,29 @@ export default function OnboardingPage() {
         imageUrl = await uploadImage(formData);
       }
 
-      const dataToSave: SalespersonSaveData = {
+      // Si no es departamento de ventas, generar la biografía automáticamente
+      let finalBio = bio;
+      if (!isSalesDepartment) {
+        const formattedData = {
+          ...formData,
+          languages: [],
+          specialties: [],
+          softSkills: formData.softSkills?.map(skill => skill.value) || [],
+          badges: [],
+          favoriteModels: []
+        };
+        finalBio = await generateBioAction(formattedData);
+      }
+
+      const dataToSave = {
         ...formData,
-        bioGenerated: bio,
+        bioGenerated: finalBio,
         yearsExperience: Number(formData.yearsExperience),
         languages: formData.languages?.map(lang => lang.value) || [],
         specialties: formData.specialties?.map(spec => spec.value) || [],
         softSkills: formData.softSkills?.map(skill => skill.value) || [],
+        badges: formData.badges?.map(badge => badge.value) || [],
+        favoriteModels: formData.favoriteModels?.map(model => model.value) || [],
         imageUrl
       };
 
@@ -280,6 +302,26 @@ export default function OnboardingPage() {
             {errors.yearsExperience && <span className="text-red-500 text-sm">Must be a positive number</span>}
           </div>
 
+          <div>
+            <label className="block mb-1">Soft Skills</label>
+            <Controller
+              name="softSkills"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  isMulti
+                  options={SOFT_SKILLS}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  placeholder="Select soft skills..."
+                />
+              )}
+            />
+            {errors.softSkills && <span className="text-red-500 text-sm">Please select at least one soft skill</span>}
+          </div>
+
           {isSalesDepartment && (
             <>
               <div>
@@ -323,23 +365,43 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <label className="block mb-1">Soft Skills</label>
+                <label className="block mb-1">Badges</label>
                 <Controller
-                  name="softSkills"
+                  name="badges"
                   control={control}
                   rules={{ required: isSalesDepartment }}
                   render={({ field }) => (
                     <Select
                       {...field}
                       isMulti
-                      options={SOFT_SKILLS}
+                      options={BADGE_OPTIONS}
                       className="basic-multi-select"
                       classNamePrefix="select"
-                      placeholder="Select soft skills..."
+                      placeholder="Select your badges..."
                     />
                   )}
                 />
-                {errors.softSkills && <span className="text-red-500 text-sm">Please select at least one soft skill</span>}
+                {errors.badges && <span className="text-red-500 text-sm">Please select at least one badge</span>}
+              </div>
+
+              <div>
+                <label className="block mb-1">Favorite Models</label>
+                <Controller
+                  name="favoriteModels"
+                  control={control}
+                  rules={{ required: isSalesDepartment }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      isMulti
+                      options={MODEL_OPTIONS}
+                      className="basic-multi-select"
+                      classNamePrefix="select"
+                      placeholder="Select your favorite models..."
+                    />
+                  )}
+                />
+                {errors.favoriteModels && <span className="text-red-500 text-sm">Please select at least one model</span>}
               </div>
 
               <div>
