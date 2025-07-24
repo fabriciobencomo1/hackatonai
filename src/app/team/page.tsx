@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { getAllSalespeople } from '@/lib/db-utils';
 import type { Salesperson } from '@/lib/db-utils';
 import { Star } from 'lucide-react';
+import Image from 'next/image';
 
 export default function TeamPage() {
   const [salespeople, setSalespeople] = useState<Salesperson[]>([]);
@@ -109,11 +110,12 @@ export default function TeamPage() {
           <div key={person.id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-start gap-4">
               {/* Profile Image - Using a placeholder for now */}
-              <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden">
-                <img
+              <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden relative">
+                <Image
                   src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${person.first_name}`}
                   alt={`${person.first_name} ${person.last_name}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
 
