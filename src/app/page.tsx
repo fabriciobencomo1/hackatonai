@@ -12,7 +12,7 @@ export default function Home() {
             href="/onboarding"
             className="btn-primary"
           >
-            Register Salesperson
+            Add Team Member
           </Link>
           
           <Link

@@ -1,27 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getAllSalespeople } from '@/lib/db-utils';
 import type { Salesperson } from '@/lib/db-utils';
 import { Star } from 'lucide-react';
+import Image from 'next/image';
 
 function getInitials(firstName: string, lastName: string) {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
+// Función para generar una calificación basada en el ID
+function generateRating(id: string): string {
+  // Usar el último carácter del ID para generar un número entre 4.0 y 5.0
+  const lastChar = id.charAt(id.length - 1);
+  const decimal = parseInt(lastChar, 16) % 10; // Convertir a número y obtener último dígito
+  return (4 + (decimal / 10)).toFixed(1);
+}
+
 export default function TeamPage() {
   const [salespeople, setSalespeople] = useState<Salesperson[]>([]);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState('');
+  const [department, setDepartment] = useState('');
   const [rating, setRating] = useState('');
   const [filteredSalespeople, setFilteredSalespeople] = useState<Salesperson[]>([]);
 
+  // Memorizar las calificaciones para que sean consistentes
+  const ratings = useMemo(() => {
+    return salespeople.reduce((acc, person) => {
+      acc[person.id] = generateRating(person.id);
+      return acc;
+    }, {} as Record<string, string>);
+  }, [salespeople]);
+
   useEffect(() => {
     const loadSalespeople = async () => {
-      const data = await getAllSalespeople();
-      setSalespeople(data);
-      setFilteredSalespeople(data);
-      setLoading(false);
+      try {
+        const data = await getAllSalespeople();
+        setSalespeople(data);
+        setFilteredSalespeople(data);
+      } catch (error) {
+        console.error('Error loading team:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadSalespeople();
@@ -30,24 +52,24 @@ export default function TeamPage() {
   const handleFilter = () => {
     let filtered = [...salespeople];
 
-    if (language) {
+    if (department) {
       filtered = filtered.filter(person => 
-        person.languages.some(lang => 
-          lang.toLowerCase().includes(language.toLowerCase())
-        )
+        person.department.toLowerCase() === department.toLowerCase()
       );
     }
 
     if (rating) {
-      // In a real app, you would have actual ratings
-      filtered = filtered.filter(() => true);
+      filtered = filtered.filter(person => 
+        person.department === 'Sales' && 
+        parseFloat(ratings[person.id]) >= parseFloat(rating)
+      );
     }
 
     setFilteredSalespeople(filtered);
   };
 
   const clearFilters = () => {
-    setLanguage('');
+    setDepartment('');
     setRating('');
     setFilteredSalespeople(salespeople);
   };
@@ -63,40 +85,41 @@ export default function TeamPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Meet the Sales Team</h1>
-        <p className="text-gray-600">Find the right advisor for you.</p>
+        <h1 className="text-3xl font-bold mb-2">Meet Our Team</h1>
+        <p className="text-gray-600">Find the right professional for you.</p>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-8 justify-center">
         <select
-          value={language}
+          value={department}
           onChange={(e) => {
-            setLanguage(e.target.value);
+            setDepartment(e.target.value);
             handleFilter();
           }}
           className="px-4 py-2 border rounded-md"
         >
-          <option value="">Language</option>
-          <option value="English">English</option>
-          <option value="Spanish">Spanish</option>
-          <option value="French">French</option>
-          <option value="Japanese">Japanese</option>
+          <option value="">All Departments</option>
+          <option value="Sales">Sales</option>
+          <option value="Managers">Managers</option>
+          <option value="Parts">Parts</option>
         </select>
 
-        <select
-          value={rating}
-          onChange={(e) => {
-            setRating(e.target.value);
-            handleFilter();
-          }}
-          className="px-4 py-2 border rounded-md"
-        >
-          <option value="">Rating</option>
-          <option value="4.5">4.5+</option>
-          <option value="4.0">4.0+</option>
-          <option value="3.5">3.5+</option>
-        </select>
+        {department === 'Sales' && (
+          <select
+            value={rating}
+            onChange={(e) => {
+              setRating(e.target.value);
+              handleFilter();
+            }}
+            className="px-4 py-2 border rounded-md"
+          >
+            <option value="">Rating</option>
+            <option value="4.5">4.5+</option>
+            <option value="4.0">4.0+</option>
+            <option value="3.5">3.5+</option>
+          </select>
+        )}
 
         <button
           onClick={clearFilters}
@@ -111,9 +134,20 @@ export default function TeamPage() {
         {filteredSalespeople.map((person) => (
           <div key={person.id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-start gap-4">
-              {/* Profile Image - Using initials as fallback */}
-              <div className="w-24 h-24 bg-blue-600 rounded-lg overflow-hidden relative flex items-center justify-center text-white text-2xl font-bold">
-                {getInitials(person.first_name, person.last_name)}
+              {/* Profile Image */}
+              <div className="w-24 h-24 bg-blue-600 rounded-lg overflow-hidden relative">
+                {person.image_url ? (
+                  <Image
+                    src={person.image_url}
+                    alt={`${person.first_name} ${person.last_name}`}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
+                    {getInitials(person.first_name, person.last_name)}
+                  </div>
+                )}
               </div>
 
               <div className="flex-1">
@@ -123,31 +157,36 @@ export default function TeamPage() {
                       {person.first_name} {person.last_name}
                     </h3>
                     <p className="text-gray-600">{person.position}</p>
+                    <p className="text-sm text-gray-500">{person.department}</p>
                   </div>
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="ml-1">{(Math.random() * (5 - 4) + 4).toFixed(1)}</span>
-                  </div>
+                  {person.department === 'Sales' && (
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span className="ml-1">{ratings[person.id]}</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600">
-                    {person.languages.join(' • ')}
-                  </p>
-                  <div className="mt-1 flex flex-wrap gap-2">
-                    {person.specialties.map((specialty, index) => (
-                      <span
-                        key={index}
-                        className="text-sm text-gray-600"
-                      >
-                        {index > 0 ? ' • ' : ''}{specialty}
-                      </span>
-                    ))}
+                {person.department === 'Sales' && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-600">
+                      {person.languages.join(' • ')}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {person.specialties.map((specialty, index) => (
+                        <span
+                          key={index}
+                          className="text-sm text-gray-600"
+                        >
+                          {index > 0 ? ' • ' : ''}{specialty}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <p className="mt-3 text-sm text-gray-700 line-clamp-2">
-                  {person.bio || person.work_motivation}
+                  {person.bio || person.work_motivation || `${person.first_name} is a dedicated member of our ${person.department} team.`}
                 </p>
 
                 <button

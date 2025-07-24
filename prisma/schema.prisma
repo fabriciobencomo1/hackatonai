@@ -6,10 +6,28 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Salesperson {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now()) @map("created_at")
+  firstName       String   @map("first_name")
+  lastName        String   @map("last_name")
+  email           String   @unique
+  phone           String?
+  department      String   // Sales, Managers, Parts
+  position        String
+  yearsExperience Int      @map("years_experience")
+  languages       String[] @default([])
+  specialties     String[] @default([])
+  salesStyle      String?  @map("sales_style")
+  workMotivation  String?  @map("work_motivation")
+  bio            String?
+
+  @@map("salespeople")
 }

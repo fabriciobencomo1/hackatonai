@@ -7,7 +7,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function generateBioAction(formData: SalespersonData): Promise<string> {
+type GenerateBioInput = Omit<SalespersonData, 'languages' | 'specialties' | 'softSkills'> & {
+  languages: string[];
+  specialties: string[];
+  softSkills: string[];
+};
+
+export async function generateBioAction(formData: GenerateBioInput): Promise<string> {
   try {
     const prompt = `
     Generate a professional biography for a car salesperson:
@@ -15,9 +21,10 @@ export async function generateBioAction(formData: SalespersonData): Promise<stri
     - Name: ${formData.firstName} ${formData.lastName}
     - Position: ${formData.position}
     - Years of Experience: ${formData.yearsExperience}
-    - Languages: ${formData.languages}
-    - Specialties: ${formData.specialties}
+    - Languages: ${formData.languages.join(', ')}
+    - Specialties: ${formData.specialties.join(', ')}
     - Sales Style: ${formData.salesStyle}
+    - Soft Skills: ${formData.softSkills.join(', ')}
     
     Requirements:
     - Maximum 120 words
@@ -27,7 +34,7 @@ export async function generateBioAction(formData: SalespersonData): Promise<stri
     `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 150,
       temperature: 0.7,

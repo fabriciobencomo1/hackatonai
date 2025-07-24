@@ -1,15 +1,11 @@
 import { supabase } from './supabase';
 import type { Database } from '@/types/database.types';
-import type { SalespersonData } from '@/types';
+import type { SalespersonSaveData } from '@/types';
 
 export type Salesperson = Database['public']['Tables']['salespeople']['Row'];
 
-export async function createSalesperson(data: SalespersonData) {
+export async function createSalesperson(data: SalespersonSaveData) {
   try {
-    // Ensure arrays are properly formatted
-    const languages = Array.isArray(data.languages) ? data.languages : data.languages.split(',').map(l => l.trim());
-    const specialties = Array.isArray(data.specialties) ? data.specialties : data.specialties.split(',').map(s => s.trim());
-
     const { data: salesperson, error } = await supabase
       .from('salespeople')
       .insert({
@@ -17,19 +13,22 @@ export async function createSalesperson(data: SalespersonData) {
         last_name: data.lastName,
         email: data.email,
         phone: data.phone || null,
+        department: data.department,
         position: data.position,
         years_experience: Number(data.yearsExperience),
-        languages: languages,
-        specialties: specialties,
-        sales_style: data.salesStyle,
-        work_motivation: data.workMotivation,
+        languages: data.languages,
+        specialties: data.specialties,
+        soft_skills: data.softSkills,
+        sales_style: data.salesStyle || null,
+        work_motivation: data.workMotivation || null,
         bio: data.bioGenerated || null,
+        image_url: data.imageUrl || null
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating salesperson:', error);
+      console.error('Error creating profile:', error);
       throw error;
     }
 
@@ -49,7 +48,7 @@ export async function getSalesperson(id: string) {
       .single();
 
     if (error) {
-      console.error('Error fetching salesperson:', error);
+      console.error('Error fetching profile:', error);
       throw error;
     }
 
@@ -60,32 +59,42 @@ export async function getSalesperson(id: string) {
   }
 }
 
-export async function updateSalesperson(id: string, data: Partial<SalespersonData>): Promise<Salesperson | null> {
-  const { data: salesperson, error } = await supabase
-    .from('salespeople')
-    .update({
+export async function updateSalesperson(id: string, data: Partial<SalespersonSaveData>) {
+  try {
+    const updateData: any = {
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,
       phone: data.phone || null,
+      department: data.department,
       position: data.position,
       years_experience: data.yearsExperience,
       languages: data.languages,
       specialties: data.specialties,
-      sales_style: data.salesStyle,
-      work_motivation: data.workMotivation,
+      soft_skills: data.softSkills,
+      sales_style: data.salesStyle || null,
+      work_motivation: data.workMotivation || null,
       bio: data.bioGenerated || null,
-    })
-    .eq('id', id)
-    .select()
-    .single();
+      image_url: data.imageUrl || null
+    };
 
-  if (error) {
-    console.error('Error updating salesperson:', error);
-    return null;
+    const { data: salesperson, error } = await supabase
+      .from('salespeople')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+
+    return salesperson;
+  } catch (error) {
+    console.error('Error in updateSalesperson:', error);
+    throw error;
   }
-
-  return salesperson;
 }
 
 export async function getAllSalespeople() {
@@ -96,13 +105,52 @@ export async function getAllSalespeople() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching salespeople:', error);
+      console.error('Error fetching profiles:', error);
       throw error;
     }
 
     return salespeople || [];
   } catch (error) {
     console.error('Error in getAllSalespeople:', error);
+    throw error;
+  }
+}
+
+export async function deleteSalesperson(id: string) {
+  try {
+    const { error } = await supabase
+      .from('salespeople')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting profile:', error);
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteSalesperson:', error);
+    throw error;
+  }
+}
+
+export async function getSalespeopleByDepartment(department: string) {
+  try {
+    const { data: salespeople, error } = await supabase
+      .from('salespeople')
+      .select()
+      .eq('department', department)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching profiles by department:', error);
+      throw error;
+    }
+
+    return salespeople || [];
+  } catch (error) {
+    console.error('Error in getSalespeopleByDepartment:', error);
     throw error;
   }
 } 

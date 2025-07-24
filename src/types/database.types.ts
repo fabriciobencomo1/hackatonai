@@ -17,12 +17,15 @@ export interface Database {
           last_name: string
           email: string
           phone: string | null
+          department: string
           position: string
           years_experience: number
+          image_url: string | null
           languages: string[]
           specialties: string[]
-          sales_style: string
-          work_motivation: string
+          soft_skills: string[]
+          sales_style: string | null
+          work_motivation: string | null
           bio: string | null
         }
         Insert: {
@@ -32,12 +35,15 @@ export interface Database {
           last_name: string
           email: string
           phone?: string | null
+          department: string
           position: string
           years_experience: number
+          image_url?: string | null
           languages: string[]
           specialties: string[]
-          sales_style: string
-          work_motivation: string
+          soft_skills: string[]
+          sales_style?: string | null
+          work_motivation?: string | null
           bio?: string | null
         }
         Update: {
@@ -47,12 +53,15 @@ export interface Database {
           last_name?: string
           email?: string
           phone?: string | null
+          department?: string
           position?: string
           years_experience?: number
+          image_url?: string | null
           languages?: string[]
           specialties?: string[]
-          sales_style?: string
-          work_motivation?: string
+          soft_skills?: string[]
+          sales_style?: string | null
+          work_motivation?: string | null
           bio?: string | null
         }
       }
