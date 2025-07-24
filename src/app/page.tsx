@@ -16,6 +16,13 @@ export default function Home() {
             Register Salesperson
           </Link>
           
+          <Link
+            href="/team"
+            className="btn-primary"
+          >
+            View Team
+          </Link>
+          
           <a
             className="btn-secondary"
             href="https://github.com/fabriciobencomo1/hackatonai"
@@ -28,7 +35,7 @@ export default function Home() {
       </main>
       
       <footer className="row-start-3 text-center text-gray-500">
-        © 2025 Demo AI. All rights reserved.
+        © 2024 Demo AI. All rights reserved.
       </footer>
     </div>
   );

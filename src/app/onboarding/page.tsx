@@ -4,10 +4,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { SalespersonData } from '@/types';
 import { generateBioAction } from '../actions/generate-bio';
+import { createSalesperson } from '@/lib/db-utils';
+import { useRouter } from 'next/navigation';
 
 export default function OnboardingPage() {
   const [bio, setBio] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   
   const { register, handleSubmit, formState: { errors } } = useForm<SalespersonData>();
 
@@ -17,15 +20,28 @@ export default function OnboardingPage() {
       // Convert arrays from string to array if they come as comma-separated strings
       const formattedData: SalespersonData = {
         ...data,
-        languages: Array.isArray(data.languages) ? data.languages : data.languages.toString().split(',').map((l: string) => l.trim()),
-        specialties: Array.isArray(data.specialties) ? data.specialties : data.specialties.toString().split(',').map((s: string) => s.trim())
+        languages: typeof data.languages === 'string' ? data.languages.toString().split(',').map((l: string) => l.trim()) : data.languages,
+        specialties: typeof data.specialties === 'string' ? data.specialties.toString().split(',').map((s: string) => s.trim()) : data.specialties
       };
       
+      // Generate bio
       const generatedBio = await generateBioAction(formattedData);
       setBio(generatedBio);
+
+      // Save to database with generated bio
+      const savedSalesperson = await createSalesperson({
+        ...formattedData,
+        bioGenerated: generatedBio
+      });
+
+      if (savedSalesperson) {
+        // Redirect to success page or show success message
+        alert('Salesperson profile created successfully!');
+        router.push('/'); // Redirect to home page
+      }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error generating biography');
+      alert('Error saving data. Please try again.');
     } finally {
       setIsLoading(false);
     }
