@@ -24,6 +24,8 @@ export interface Database {
           languages: string[]
           specialties: string[]
           soft_skills: string[]
+          badges: string[]
+          favorite_models: string[]
           sales_style: string | null
           work_motivation: string | null
           bio: string | null
@@ -42,6 +44,8 @@ export interface Database {
           languages: string[]
           specialties: string[]
           soft_skills: string[]
+          badges: string[]
+          favorite_models: string[]
           sales_style?: string | null
           work_motivation?: string | null
           bio?: string | null
@@ -60,6 +64,8 @@ export interface Database {
           languages?: string[]
           specialties?: string[]
           soft_skills?: string[]
+          badges?: string[]
+          favorite_models?: string[]
           sales_style?: string | null
           work_motivation?: string | null
           bio?: string | null

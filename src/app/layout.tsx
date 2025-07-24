@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Demo AI - Sales Team Platform',
-  description: 'AI-Powered Car Sales Professional Platform',
+  title: 'SmartStaff AI - Intelligent Team Management',
+  description: 'AI-Powered Team Management Platform for Car Dealerships',
 };
 
 export default function RootLayout({
