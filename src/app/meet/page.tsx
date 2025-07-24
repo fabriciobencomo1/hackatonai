@@ -5,7 +5,6 @@ import { getAllSalespeople } from '@/lib/db-utils'
 import type { Salesperson } from '@/lib/db-utils'
 
 import CardTeamSales from '@/components/CardTeamSales'
-import { useParams, usePathname } from 'next/navigation'
 
 function getInitials(firstName: string, lastName: string) {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
@@ -19,7 +18,11 @@ function generateRating(id: string): string {
   return (4 + decimal / 10).toFixed(1)
 }
 
-export default function TeamPage() {
+type PageProps = {
+  searchParams?: { [key: string]: string | string[] | undefined }
+}
+
+export default function TeamPage({ searchParams }: PageProps) {
   const [salespeople, setSalespeople] = useState<Salesperson[]>([])
   const [loading, setLoading] = useState(true)
   const [department, setDepartment] = useState('')
@@ -86,13 +89,12 @@ export default function TeamPage() {
     )
   }
 
-  const path = usePathname()
-  console.log(path)
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Meet Our Sales Team</h1>
+        <h1 className="text-3xl font-bold mb-2">
+          Meet Our {searchParams?.rol} Team
+        </h1>
         <p className="text-gray-600">Find the right professional for you.</p>
       </div>
 
@@ -101,9 +103,10 @@ export default function TeamPage() {
         {filteredSalespeople.map((person) => (
           <>
             <CardTeamSales
+              rol={searchParams?.rol as string}
               name={`${person.first_name} ${person.last_name}`}
-              position="Senior Advisor"
-              image="/path/to/profile.jpg"
+              position={person.department}
+              image={person.image_url || ''}
               languages={['English', 'French', 'Spanish']}
               traits={{ friendly: true, efficient: true, respectful: true }}
               description="I've been an advisor for over 6 years. I love helping families find the perfect car that fits their needs and budget."

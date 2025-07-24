@@ -2,18 +2,19 @@ import Image from 'next/image'
 import { MessageCircle, CheckCircle, Handshake } from 'lucide-react'
 
 interface CardTeamSalesProps {
-  name: string
-  position: string
-  image: string
+  name?: string
+  position?: string
+  image?: string
   languages: string[]
   traits: {
     friendly: boolean
     efficient: boolean
     respectful: boolean
   }
-  description: string
+  description?: string
   onScheduleMeeting?: () => void
   onGetToKnow?: () => void
+  rol?: string
 }
 
 export default function CardTeamSales({
@@ -25,6 +26,7 @@ export default function CardTeamSales({
   description,
   onScheduleMeeting,
   onGetToKnow,
+  rol,
 }: CardTeamSalesProps) {
   const traitIcons = {
     friendly: MessageCircle,
@@ -43,7 +45,12 @@ export default function CardTeamSales({
       {/* Profile Image */}
       <div className="flex justify-center mb-6">
         <div className="relative w-48 h-48 rounded-3xl overflow-hidden bg-gray-200">
-          <Image src={image} alt={name} fill className="object-cover" />
+          <Image
+            src={image ? image : ''}
+            alt={name ? name : ''}
+            fill
+            className="object-cover"
+          />
         </div>
       </div>
 
@@ -54,33 +61,37 @@ export default function CardTeamSales({
       </div>
 
       {/* Languages */}
-      <div className="flex justify-center gap-8 mb-8">
-        {languages.map((language, index) => (
-          <span key={index} className="text-lg font-medium text-gray-700">
-            {language}
-          </span>
-        ))}
-      </div>
+      {rol === 'Sales' && (
+        <div className="flex justify-center gap-8 mb-8">
+          {languages.map((language, index) => (
+            <span key={index} className="text-lg font-medium text-gray-700">
+              {language}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Traits with Icons */}
-      <div className="flex justify-center gap-6 mb-6">
-        {Object.entries(traits).map(([trait, isActive]) => {
-          if (!isActive) return null
+      {rol === 'Sales' && (
+        <div className="flex justify-center gap-6 mb-6">
+          {Object.entries(traits).map(([trait, isActive]) => {
+            if (!isActive) return null
 
-          const IconComponent = traitIcons[trait as keyof typeof traitIcons]
-          const label = traitLabels[trait as keyof typeof traitLabels]
+            const IconComponent = traitIcons[trait as keyof typeof traitIcons]
+            const label = traitLabels[trait as keyof typeof traitLabels]
 
-          return (
-            <div key={trait} className="flex flex-col items-center">
-              <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center mb-2">
-                <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
-                  <IconComponent className="w-6 h-6 text-yellow-400" />
+            return (
+              <div key={trait} className="flex flex-col items-center">
+                <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center mb-2">
+                  <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
+                    <IconComponent className="w-6 h-6 text-yellow-400" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Traits Labels */}
       <div className="text-center mb-6">

@@ -10,26 +10,30 @@ const teamData = [
   {
     title: 'Executive Team',
     image: '/uploads/team/ian.jpg', // Replace with your actual image paths
-    href: '/meet?department=Managers',
+    href: '/meet',
     colorOverlay: 'bg-blue-600',
+    rol: 'Executive',
   },
   {
     title: 'Sales',
     image: '/uploads/team/chris.png',
-    href: '/meet?department=Sales',
+    href: '/meet',
     colorOverlay: 'bg-green-600',
+    rol: 'Sales',
   },
   {
     title: 'Marketing',
     image: '/uploads/team/marketing.png',
-    href: '/meet?department=Marketing',
+    href: '/meet',
     colorOverlay: 'bg-purple-600',
+    rol: 'Marketing',
   },
   {
     title: 'Account Management',
     image: '/uploads/team/victor.png',
-    href: '/meet?department=Accounts',
+    href: '/meet',
     colorOverlay: 'bg-orange-600',
+    rol: 'Account Management',
   },
 ]
 
@@ -168,6 +172,7 @@ export default function TeamPage() {
               image={team.image}
               href={team.href}
               colorOverlay={team.colorOverlay}
+              rol={team.rol}
             />
           ))}
         </div>

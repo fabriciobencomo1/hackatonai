@@ -6,17 +6,18 @@ type CardTeamProps = {
   image: string | null
   href?: string
   colorOverlay?: string
+  rol: string
 }
 
 export default function CardTeam({
   title,
   image,
   href = '#',
-  colorOverlay = 'bg-blue-600',
+  rol,
 }: CardTeamProps) {
   return (
     <Link
-      href={href}
+      href={{ pathname: href, query: { rol } }}
       className="group block relative overflow-hidden rounded-lg aspect-[4/5] transition-all duration-300 hover:scale-[1.02]"
     >
       {/* Background Image */}
